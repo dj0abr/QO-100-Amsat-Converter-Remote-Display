@@ -4,3 +4,6 @@ a Linux Web based remote display for any browser. Shows information of the Amsat
 this is work in progress.
 
 !!! Please wait until I announce a first working version !!!
+
+
+
