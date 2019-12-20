@@ -3,7 +3,9 @@ a Linux Web based remote display for any browser. Shows information of the Amsat
 
 this is work in progress.
 
-!!! Please wait until I announce a first working version !!!
+Status: 20.Dec 2019
+   reading serial data, checking for amsat data and print to console
+   
 
 
 
