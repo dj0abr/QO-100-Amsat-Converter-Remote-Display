@@ -10,9 +10,9 @@ runs on PCs or single board computers (i.e. raspberry, odroid and many others).
 * fill into a web site
 * deliver this website to a bowser using a local apache webserver installation
 
-this is work in progress.
+# this is work in progress.
 
-Status: 20.Dec 2019
+# Status: 20.Dec 2019
    reading serial data, checking for amsat data and print to console
    
 
