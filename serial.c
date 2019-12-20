@@ -96,7 +96,7 @@ int rxbyte = 0;
                     else
                     {
                         // if open tty failed, then try the next ttyUSBx number
-                        if(++ttynum >= 4) ttynum = 0;
+                        if(++ttynum >= serportnum) ttynum = 0;
                     }
                     break;
                     
@@ -160,11 +160,11 @@ int activate_serial()
 	struct termios tty;
     char serdevice[30];
     
-    sprintf(serdevice,"/dev/ttyUSB%d",ttynum);
+    sprintf(serdevice,"%s",serportarr[ttynum]);
     
 	closeSerial();
     
-    printf("Open: /dev/ttyUSB%d\n",ttynum);
+    printf("Open: %s\n",serdevice);
     
 	fd_ser = open(serdevice, O_RDWR | O_NDELAY);
 	if (fd_ser < 0) {
@@ -209,7 +209,7 @@ int activate_serial()
     flags &= ~TIOCM_RTS;
     ioctl(fd_ser, TIOCMSET, &flags);
     
-    printf("/dev/ttyUSB%d opened sucessfully\n",ttynum);
+    printf("%s opened sucessfully\n",serdevice);
     
 	return 0;
 }
