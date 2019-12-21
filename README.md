@@ -39,6 +39,7 @@ if you own an Amsat-Downconverter V3d or later (it will not work with V1 boards)
 
 The board has an serial output line, located here:
 
+![alt text](https://www.helitron.de/dj0abr/images/sat/amsat/upconv/a1.png)
 
 TODO ....
 
