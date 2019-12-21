@@ -12,3 +12,6 @@ amsatdisplay: $(OBJ)
 clean:
 	rm -f *.o amsatdisplay
 
+install:
+	sudo ./amsatdisplay
+	

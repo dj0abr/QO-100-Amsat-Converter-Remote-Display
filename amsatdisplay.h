@@ -18,7 +18,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <math.h>
-
+#include <signal.h>
 
 int serial_init();
 void eval_downconverter(char *s);

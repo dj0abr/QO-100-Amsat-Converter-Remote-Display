@@ -53,7 +53,6 @@ int serial_init()
         return 0;
     }
     
-    printf("OK: catproc started\n");
     return 1;
 }
 
@@ -162,7 +161,7 @@ int activate_serial()
     
 	closeSerial();
     
-    printf("Open: %s\n",serdevice);
+    //printf("Open: %s\n",serdevice);
     
 	fd_ser = open(serdevice, O_RDWR | O_NDELAY);
 	if (fd_ser < 0) {
@@ -207,7 +206,7 @@ int activate_serial()
     flags &= ~TIOCM_RTS;
     ioctl(fd_ser, TIOCMSET, &flags);
     
-    printf("%s opened sucessfully\n",serdevice);
+    printf("%s opened\n",serdevice);
     
 	return 0;
 }

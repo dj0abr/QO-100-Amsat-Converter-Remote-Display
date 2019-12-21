@@ -6,6 +6,7 @@
 
     $rdsocket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
     socket_set_option($rdsocket, SOL_SOCKET, SO_REUSEADDR, 1);
+    socket_set_option($rdsocket, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 2, 'usec' => 0));
     socket_bind($rdsocket, '127.0.0.1', 46972);
 
     // request one line from amsatdisplay.c

@@ -14,16 +14,19 @@ runs on PCs or single board computers (i.e. raspberry, odroid and many others).
 
 # Status: 21.Dec 2019
    Downconverter Display: OK and working
-   
-   TODO: the internal socket could hang, making Apache unresponsive. In this case apache must be restartet: service apache2 restart
-   
+
 # software installation
 
-    1) install apache and php. You can use the script "prepare_apache" to do this. If php is not found then try php7 or similar.
+    1) install apache and php. You can use the script "prepare_apache" to do this. 
+    If php is not found then try php7 or similar.
     2) download (clone) all file to a new directory
-    3) enter:  make  , this compiles the software
-    4) as root: copy all files from the HTML subfolder to the apache HTML folder, which is /var/www/html in debian based systems.
-    5) start  ./amsatdisplay
+    3) enter:  
+    make
+    this compiles this software
+    4) enter: 
+    sudo make install
+    this installs the software and copies the web site files into the webserver directory
+    5) start the program by entering:  ./amsatdisplay
 
 # showing the display
 

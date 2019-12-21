@@ -34,7 +34,7 @@ void init_udppipe()
     memset(&sinc4fm, 0, sizeof(struct sockaddr_in));
     sinc4fm.sin_family = AF_INET;
     sinc4fm.sin_port = htons(PORTNUM);
-    printf("open sock: %d\n", PORTNUM);
+    //printf("open sock: %d\n", PORTNUM);
     sinc4fm.sin_addr.s_addr = INADDR_ANY;	// nur intern
 
     if (bind(pipe_sock, (struct sockaddr *)&sinc4fm, sizeof(struct sockaddr_in)) != 0)
@@ -60,7 +60,7 @@ void init_udppipe()
     memset(&sinc4fm, 0, sizeof(struct sockaddr_in));
     sinc4fm.sin_family = AF_INET;
     sinc4fm.sin_port = htons(REQPORTNUM);
-    printf("open sock: %d\n", REQPORTNUM);
+    //printf("open sock: %d\n", REQPORTNUM);
     sinc4fm.sin_addr.s_addr = INADDR_ANY;	// nur intern
 
     if (bind(req_sock, (struct sockaddr *)&sinc4fm, sizeof(struct sockaddr_in)) != 0)
@@ -95,8 +95,8 @@ int read_udppipe(unsigned char *data, int maxlen)
 
 	fromlen = sizeof(struct sockaddr_in);
 	struct sockaddr_in frm_dmr;
-    printf("wait for data\n");
+    //printf("wait for data\n");
 	len = recvfrom(req_sock, (char *)data, maxlen, 0, (struct sockaddr *)&frm_dmr, &fromlen);
-	printf("read %d bytes from sock: %d\n", len, req_sock);
+	//printf("read %d bytes from sock: %d\n", len, req_sock);
 	return len;
 }
