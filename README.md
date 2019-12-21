@@ -8,9 +8,10 @@ runs on PCs or single board computers (i.e. raspberry, odroid and many others).
 # Functions
 * read data from Amsat boards
 * fill into a web site
-* deliver this website to a bowser using a local apache webserver installation
+* deliver this website to any bowser using a local apache webserver installation
 
 currently supported boards: Amsat-DL Downconverter V3d
+
 under construction: support of the Amsat-DL Upconverter V2.4
 
 # software installation
