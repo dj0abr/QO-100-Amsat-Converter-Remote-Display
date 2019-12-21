@@ -19,11 +19,16 @@ under construction: support of the Amsat-DL Upconverter V2.4
     1) install apache and php. You can use the script "prepare_apache" to do this. 
     If php is not found then try php7 or similar.
     2) download (clone) all file to a new directory
-    3) to compile the software enter:  
+    3) personalize the display, see "personalization"
+    4) to compile the software enter:  
         make
-    4) to install this software enter:
+    5) to install this software enter:
         sudo make install
        this copies the web site files into the webserver directory
+
+# personalization
+open the file amsatdisplay.html (in the html folder) with a text editor. Go to the end of the file and look for my callsign: DJ0ABR. 
+Replace it with your own callsign and location.
 
 # run this software
 start the program by entering:  ./ad
