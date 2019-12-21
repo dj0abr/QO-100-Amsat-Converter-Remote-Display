@@ -85,6 +85,12 @@ char htmldir[256] = { "." };
 
 void searchHTMLpath()
 {
+    if (getuid())
+    {
+        //printf("\nYou are not root, HTML files are not automatically copied into the Apache folder!\n");
+        return;
+    }
+    
     if(htmldir[0] == '.')
     {
         // search for the apache woking directory
@@ -127,7 +133,7 @@ void installHTMLfiles()
     int i;
     if ((i=getuid()))
     {
-        printf("\nYou are not root, HTML files are not automatically copied into the Apache folder!\n");
+        //printf("\nYou are not root, HTML files are not automatically copied into the Apache folder!\n");
         return;
     }
     
@@ -147,7 +153,9 @@ void installHTMLfiles()
     
     if(getuid() == 0)
     {
-        printf("\nInstallation complete\nnow start the program as normal user:  ./amsatdisplay\n\n");
+        printf("\n==================================================\n");
+        printf("Installation complete\nnow start the program as normal user by entering:\n./ad\n");
+        printf(  "==================================================\n");
         exit(0);
     }
 }

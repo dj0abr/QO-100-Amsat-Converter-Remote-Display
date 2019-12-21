@@ -24,8 +24,8 @@ runs on PCs or single board computers (i.e. raspberry, odroid and many others).
         make
     4) to install this software enter:
         sudo make install
-       this installs the software and copies the web site files into the webserver directory
-    5) start the program by entering:  ./amsatdisplay
+       this copies the web site files into the webserver directory
+    5) start the program by entering:  ./ad
 
 # showing the display
 

@@ -13,5 +13,6 @@ clean:
 	rm -f *.o amsatdisplay
 
 install:
+	chmod 755 amsatdisplay ad
 	sudo ./amsatdisplay
 	
