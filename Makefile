@@ -2,7 +2,7 @@ CFLAGS?=-O3 -Wall -std=gnu99
 LDLIBS+= -lpthread -lm
 CC?=gcc
 PROGNAME=amsatdisplay
-OBJ=amsatdisplay.o serial.o evaldata.o
+OBJ=amsatdisplay.o serial.o pipe.o fifo.o evaldata.o
 
 all: amsatdisplay
 

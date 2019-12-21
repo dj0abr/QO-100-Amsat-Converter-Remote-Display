@@ -1,0 +1,160 @@
+<!doctype html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AMSAT-DL Display</title>
+<link rel="icon" href="/favicon.ico?" type="image/x-icon">
+<script type="text/javascript" src="jquery-3.3.1.js"></script>
+<script type="text/javascript" src="jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="phpdir/wsprconfig.js"></script>
+<script type="text/javascript" src="wspr_js.js"></script>
+<link rel="stylesheet" type="text/css" href="jquery.dataTables.min.css">
+
+<style>
+.dntitle
+{
+    width: 278px;
+    background-color: #e0e0e0;
+    font: normal 300 18px/1 "Verdana", sans-serif;
+    border:1px solid #a0a0a0;
+    border-radius: 5px;
+    margin-top: 1px;
+    margin-left: 1px;
+    margin-bottom: 5px;
+    color: black;
+    padding:3px;
+    text-align: center;
+}
+
+.amsattitle
+{
+    width: 278px;
+    background-color: #e0e0e0;
+    font: normal 300 18px/1 "Verdana", sans-serif;
+    border:1px solid #a0a0a0;
+    border-radius: 5px;
+    margin-top: 1px;
+    margin-left: 1px;
+    margin-bottom: 5px;
+    color: black;
+    padding:3px;
+    text-align: center;
+}
+
+.displayrow
+{
+    width: 300px;
+    height: 22px;
+    display: flex;
+}
+
+.displaycolclass
+{
+    width: 12px;
+    height: 22px;
+    background-color: #202040;
+    font: normal 600 20px/1 "Courier New", sans-serif;
+    color: white;
+    padding:3px;
+}
+
+</style>
+</head>
+
+<body>
+<script>
+
+var xmlHttpObject = new XMLHttpRequest();
+
+window.onload = start;
+
+function start()
+{
+    create_display();
+    myOnloadFunction();
+    setInterval(myOnloadFunction, 1000);
+}
+
+function myOnloadFunction()
+{
+    // request new data to display via ajax and php
+    xmlHttpObject.open('get',"/getamsatdata.php",true);
+    xmlHttpObject.onreadystatechange = handleContent;
+    xmlHttpObject.send(null);
+    return false;
+}
+
+// read response from php
+function handleContent()
+{
+    if (xmlHttpObject.readyState == 4)
+    {
+        // Gesamte Datei in Zeilen aufgeteilt
+        var text = xmlHttpObject.responseText;
+        if(text[0] == '5')
+        {
+            // Downconverter Displaydata
+            //console.log(text);
+            var x=0;
+            var y=0;
+            while(1)
+            {
+                document.getElementById("displaycol"+ y + x).innerHTML = text[y*16+x+1];
+                x++;
+                if(x == 16)
+                {
+                    x=0;
+                    y++;
+                    if(y >= 8) break;
+                }
+            }
+        }
+    }
+}
+
+function createDiv(elemid, elemclass, parentelem, text)
+{
+    var div = document.createElement("div");
+    div.className = elemclass;
+    if(elemid.length > 0)
+        div.id = elemid;
+    if(text.length > 0)
+        div.innerHTML = text;
+    document.getElementById(parentelem).appendChild(div);
+}
+
+/*
+the downconverter display has 8 rows and 16 columns
+where each column has 8 pixels, so x goes from 0 to 128
+ID of a box: displaycolyx y=row(0..7) x=col(0..15)
+*/
+function create_display()
+{
+    document.getElementById("dntitle").innerHTML = "Downconverter Remote Display";
+    // make the 8 row divs, horizontal stripes
+    for(row=0; row<8; row++)
+    {
+        // function createDiv(elemid, elemclass, parentelem, text)
+        createDiv("displayrow"+row, "displayrow", "amsatmain", "");
+    }
+    
+    // now create 16 divs (columns) for each row
+    var lidx = 74;
+    for(row=0; row<8; row++)
+    {
+        for(col=0; col<16; col++)
+        {
+            createDiv("displaycol"+row+col, "displaycolclass", "displayrow"+row, "");
+        }
+    }
+}
+
+</script>
+<div class="amsattitle" id="amsattitle">
+Station: DJ0ABR<br>
+QTH: Auerbach JN68NT
+</div>
+<div class="dntitle" id="dntitle"></div>
+<div class="amsatmain" id="amsatmain"></div>
+</form>
+</body>
+</html>

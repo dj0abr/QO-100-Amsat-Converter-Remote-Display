@@ -12,8 +12,33 @@ runs on PCs or single board computers (i.e. raspberry, odroid and many others).
 
 # this is work in progress.
 
-# Status: 20.Dec 2019
-   reading serial data, checking for amsat data and print to console
+# Status: 21.Dec 2019
+   Downconverter Display: OK and working
+   
+   TODO: the internal socket could hang, making Apache unresponsive. In this case apache must be restartet: service apache2 restart
+   
+# software installation
+
+    1) install apache and php. You can use the script "prepare_apache" to do this. If php is not found then try php7 or similar.
+    2) download (clone) all file to a new directory
+    3) enter:  make  , this compiles the software
+    4) as root: copy all files from the HTML subfolder to the apache HTML folder, which is /var/www/html in debian based systems.
+    5) start  ./amsatdisplay
+
+# showing the display
+
+the display can be watch in any browser on any system.
+Open your favorite web browser and enter the IP address of your linux computer and you will see the display.
+
+# hardware installation
+
+if you own an Amsat-Downconverter V3d or later (it will not work with V1 boards):
+
+The board has an serial output line, located here:
+
+TODO ....
+
+
    
 
 

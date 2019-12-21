@@ -32,7 +32,6 @@ int ttynum = 0;
 char rxbuf[DOWN_MAXRXLEN+1]; // one extra byte for string terminator
 char databuf[DOWN_MAXRXLEN+1]; // one extra byte for string terminator
 int rxidx = 0;
-int dataready = 0;
 
 // creates a thread to run all serial specific jobs
 // call this once after program start
@@ -41,7 +40,6 @@ int serial_init()
 {
     while(serportnum == 0)
     {
-        printf("no serial port found, please connect a USB/serial converter\n");
         scanSerialPorts();
         sleep(1);
     }
@@ -283,14 +281,22 @@ static int idx = 0;
 
 			if(rxdatabyte == '\n')
 			{
-				// finished
-				rxbuf[rxidx] = 0;	// string terminator
-				memcpy(databuf,rxbuf,DOWN_MAXRXLEN);
-                databuf[DOWN_MAXRXLEN-1] = 0;
-                // delete \n
-                if(strlen(databuf) > 5 && databuf[strlen(databuf)-1] == '\n')
-                    databuf[strlen(databuf)-1] = 0;
-				dataready = 1;
+				// finished reading a complete sentence
+				rxbuf[rxidx] = 0;	      // add string terminator
+				strcpy(databuf,"OLD ");   // copy to databuf, add header which is not in rxbuf
+				memcpy(databuf+4,rxbuf,DOWN_MAXRXLEN-4);
+                databuf[DOWN_MAXRXLEN-1] = 0;   // terminate at the end, just to be sure
+                
+                // trim any non-text char at the end of the line
+                for(int i=0; i<strlen(databuf); i++)
+                {
+                    if(databuf[i] < ' ' || databuf[i] > 'z')
+                        databuf[i] = 0;
+                }
+                
+                // the complete sentence is in databuf
+                // build a simulated display
+                eval_downconverter(databuf);
 				idx = 0;
 				break;
 			}

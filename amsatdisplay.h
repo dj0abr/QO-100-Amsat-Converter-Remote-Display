@@ -13,9 +13,26 @@
 #include <termios.h>
 #include <sys/file.h>
 #include <pthread.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <math.h>
+
 
 int serial_init();
-void eval_serialdata();
+void eval_downconverter(char *s);
+void init_udppipe();
+char write_udppipe(unsigned char *data, int len);
+int read_udppipe(unsigned char *data, int maxlen);
+int write_fifo(unsigned char *data, int len);
+int read_fifo(unsigned char *data, int maxlen);
+void show_display(char *d, char *tit);
+void init_displayarray();
+void init_fifo();
+
+#define XSIZE   16
+#define YSIZE   8
 
 #define DOWN_MAXRXLEN 500
 
