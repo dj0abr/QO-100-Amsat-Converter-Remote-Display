@@ -25,11 +25,13 @@ runs on PCs or single board computers (i.e. raspberry, odroid and many others).
     4) to install this software enter:
         sudo make install
        this copies the web site files into the webserver directory
-    5) start the program by entering:  ./ad
+
+# run this software
+start the program by entering:  ./ad
 
 # showing the display
 
-the display can be watch in any browser on any system.
+the display can be watched in any browser on any system.
 Open your favorite web browser and enter the IP address of your linux computer and you will see the display.
 
 # hardware installation
