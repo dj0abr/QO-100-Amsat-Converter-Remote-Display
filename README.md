@@ -46,7 +46,8 @@ this line is also available if the GPS-modul is installed, in this case solder a
 The serial output works with 3,3v level. You need a 3,3v serial/USB converter. You can easily find these converters in the internet for very little money.
 
     1) connect the 3,3v USB adapter into your linux computer
-    2) connect Ground and the serial output of the Amsat-Downconverter with Ground and the serial input (RxD) of your USB adapter.
+    2) connect Ground and the serial output of the Amsat-Downconverter with Ground 
+          and the serial input (RxD) of your USB adapter.
     3) start this software as described above
     4) switch ON your Amsat Downconverter
     5) start a browser, enter your computer's IP address and watch the remote display
