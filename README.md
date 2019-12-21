@@ -20,12 +20,10 @@ runs on PCs or single board computers (i.e. raspberry, odroid and many others).
     1) install apache and php. You can use the script "prepare_apache" to do this. 
     If php is not found then try php7 or similar.
     2) download (clone) all file to a new directory
-    3) enter:  
+    3) to compile this software enter:  
 > make
-* this compiles this software
-    4) enter: 
-    * sudo make install
-    * this installs the software and copies the web site files into the webserver directory
+    4) to install this software enter: 
+> sudo make install
     5) start the program by entering:  ./amsatdisplay
 
 # showing the display
