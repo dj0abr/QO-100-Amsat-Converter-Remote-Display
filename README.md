@@ -21,8 +21,8 @@ runs on PCs or single board computers (i.e. raspberry, odroid and many others).
     If php is not found then try php7 or similar.
     2) download (clone) all file to a new directory
     3) enter:  
-    ### make
-    * this compiles this software
+> make
+* this compiles this software
     4) enter: 
     * sudo make install
     * this installs the software and copies the web site files into the webserver directory
