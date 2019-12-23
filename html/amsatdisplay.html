@@ -3,13 +3,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AMSAT-DL Display</title>
 <link rel="icon" href="/favicon.ico?" type="image/x-icon">
-<script type="text/javascript" src="jquery-3.3.1.js"></script>
-<script type="text/javascript" src="jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="phpdir/wsprconfig.js"></script>
-<script type="text/javascript" src="wspr_js.js"></script>
-<link rel="stylesheet" type="text/css" href="jquery.dataTables.min.css">
 
 <style>
+
+.downconv
+{
+    width: 300px;
+    height: 340px;
+    background-color: #f0f0f0;
+    border:1px solid #a0a0a0;
+    border-radius: 5px;
+    color: black;
+}
+
 .dntitle
 {
     width: 278px;
@@ -17,12 +23,10 @@
     font: normal 300 18px/1 "Verdana", sans-serif;
     border:1px solid #a0a0a0;
     border-radius: 5px;
-    margin-top: 1px;
-    margin-left: 1px;
-    margin-bottom: 5px;
     color: black;
     padding:3px;
     text-align: center;
+    margin: 5px;
 }
 
 .amsattitle
@@ -32,12 +36,10 @@
     font: normal 300 18px/1 "Verdana", sans-serif;
     border:1px solid #a0a0a0;
     border-radius: 5px;
-    margin-top: 1px;
-    margin-left: 1px;
-    margin-bottom: 5px;
     color: black;
     padding:3px;
     text-align: center;
+    margin: 5px;
 }
 
 .displayrow
@@ -45,6 +47,7 @@
     width: 300px;
     height: 22px;
     display: flex;
+    margin: 5px;
 }
 
 .displaycolclass
@@ -55,6 +58,20 @@
     font: normal 600 20px/1 "Courier New", sans-serif;
     color: white;
     padding:3px;
+}
+
+.dc_runtime
+{
+    width: 278px;
+    background-color: #e0e0e0;
+    font: normal 300 18px/1 "Verdana", sans-serif;
+    border:1px solid #a0a0a0;
+    border-radius: 5px;
+    color: black;
+    padding:3px;
+    text-align: center;
+    margin: 5px;
+    margin-top: 10px;
 }
 
 </style>
@@ -88,24 +105,46 @@ function handleContent()
 {
     if (xmlHttpObject.readyState == 4)
     {
-        // Gesamte Datei in Zeilen aufgeteilt
+        // get data string from PHP
         var text = xmlHttpObject.responseText;
-        if(text[0] == '5')
+        
+        // walk through the elements
+        var idx = 0;
+        for(i=0; i<20; i++)
         {
-            // Downconverter Displaydata
-            //console.log(text);
-            var x=0;
-            var y=0;
-            while(1)
+            try
             {
-                document.getElementById("displaycol"+ y + x).innerHTML = text[y*16+x+1];
-                x++;
-                if(x == 16)
+                var len = text.substring(idx,idx+3);
+                var binlen = Number(len);
+                idx += 3;
+                var type = text[idx++];
+                var data = text.substring(idx,binlen+idx);
+                idx += binlen;
+                
+                if(len === undefined || type === undefined || data === undefined)
+                    break;
+                
+                if(type == '5')
                 {
-                    x=0;
-                    y++;
-                    if(y >= 8) break;
+                    // Downconverter displaydata
+                    for(var y=0; y<8; y++)
+                    {
+                        for(var x=0; x<16; x++)
+                        {
+                            document.getElementById("displaycol"+ y + x).innerHTML = data.substring(y*16+x,y*16+x+1);
+                        }
+                    }
                 }
+                
+                if(type == '6')
+                {
+                    // Downconverter runtime string
+                    document.getElementById("dc_runtime").innerHTML = "Runtime: " + data;
+                }
+            }
+            catch(err)
+            {
+                break;
             }
         }
     }
@@ -149,12 +188,15 @@ function create_display()
 }
 
 </script>
-<div class="amsattitle" id="amsattitle">
-Station: DJ0ABR<br>
-QTH: Auerbach JN68NT
+<div class="downconv" id="downconv">
+    <div class="amsattitle" id="amsattitle">
+    Station: DJ0ABR<br>
+    QTH: Auerbach JN68NT
+    </div>
+    <div class="dntitle" id="dntitle"></div>
+    <div class="amsatmain" id="amsatmain"></div>
+    <div class="dc_runtime" id="dc_runtime">Runtime</div>
 </div>
-<div class="dntitle" id="dntitle"></div>
-<div class="amsatmain" id="amsatmain"></div>
 </form>
 </body>
 </html>

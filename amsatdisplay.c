@@ -154,9 +154,9 @@ void installHTMLfiles()
     if(getuid() == 0)
     {
         printf("\n==================================================\n");
-        printf("Installation complete\nnow start the program as normal user by entering:\n./ad\n");
+        printf("Installation complete\n");
+        printf("now you may start the program as normal user by entering:\n./ad\n");
         printf(  "==================================================\n");
-        exit(0);
     }
 }
 
@@ -169,8 +169,10 @@ void sighandler(int signum)
 
 int main()
 {
-char s[512];
-char pip[512];
+char s[MAXDATALEN];
+char dispdata[MAXDATALEN];
+char pip[MAXDATALEN];
+uint8_t alldata[MAXDATALEN * FIFO_BUFFER_LENGTH];
 
     // check if it is already running, if yes then exit
     isRunning();
@@ -195,8 +197,8 @@ char pip[512];
     // instead handle the return value of the write or send function
     signal(SIGPIPE, SIG_IGN);
 
-    memset(s,' ',512);
-    init_fifo();
+    memset(s,' ',MAXDATALEN);
+    memset(dispdata,' ',MAXDATALEN);
     init_displayarray();
     init_udppipe();
     serial_init();
@@ -204,21 +206,24 @@ char pip[512];
     while(1)
     {
         // wait for request from browser via php
-        int len = read_udppipe((unsigned char *)pip,511);
+        int len = read_udppipe((unsigned char *)pip,MAXDATALEN);
         if(len > 0)
         {
-            // browser asks for new data, check if we have data in the fifo
-            // only take the latest data from the fifo
-            while(1)
+            // read all data from the fifo and put it in one binary string
+            DATASET ds;
+            int idx = 0;
+            while((len = read_fifo(&ds)))
             {
-                int len = read_fifo((unsigned char *)(s+1),511);
-                if(len == 0)
-                    break;
+                len += 4;  // include length and type from DATASET
+                memcpy(&alldata[idx], &ds, len);
+                idx += len;
             }
             
-            s[0] = 0x35;   // marker: Downconverter Display data follows
-            //printf("%16.16s\n",s+1);
-            write_udppipe((unsigned char *)s,XSIZE*YSIZE+1);
+            if(idx != 0)
+            {
+                // send to PHP
+                write_udppipe(alldata,idx);
+            }
         }
     }
         

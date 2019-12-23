@@ -15,50 +15,43 @@ pthread_mutex_t crit_sec;
 #define LOCK()	pthread_mutex_lock(&crit_sec)
 #define UNLOCK()	pthread_mutex_unlock(&crit_sec)
 
-
-#define BUFFER_ELEMENT_SIZE 512
-#define BUFFER_LENGTH 100
-unsigned char buffer[BUFFER_LENGTH][BUFFER_ELEMENT_SIZE+1];
+struct {
+    int len;
+    DATASET buffer;
+} fifodata[FIFO_BUFFER_LENGTH];
 
 int wridx = 0, rdidx = 0;
 
-void init_fifo()
+int write_fifo(char type, unsigned char* data, int len)
 {
-    memset(buffer,0,BUFFER_LENGTH*(BUFFER_ELEMENT_SIZE+1));
-}
-
-int write_fifo(unsigned char *data, int len)
-{
-	// check if element contains data and is not too long
-	if (len == 0 || len >= (BUFFER_ELEMENT_SIZE - 2)) 
-    {
-        printf("invalid element size: %d\n",len);
-        return 0;
-    }
-
     LOCK();
+    
 	// check if we have space in the fifo
-	if (((wridx + 1) % BUFFER_LENGTH) == rdidx)
+	if (((wridx + 1) % FIFO_BUFFER_LENGTH) == rdidx)
     {
         // no more space, ignore element
         UNLOCK();
-        printf("FIFO full\n");
 		return 0;
     }
 
+    // prepare fifo entry
+    DATASET ds;
+    char s[4];
+    sprintf(s,"%03d",len);
+    memcpy(ds.length,s,3);
+    ds.type = type;
+    memcpy(ds.data,data,len);
+
 	// write data into the fifo
-	// write the length into the firast two bytes, 16 bit MSB first
-	buffer[wridx][0] = len>>8;
-    buffer[wridx][1] = len;
-	// insert the data
-	memcpy(buffer[wridx]+2, data, len);
-	if (++wridx == BUFFER_LENGTH) wridx = 0;
+    fifodata[wridx].len = len;
+    memcpy(&(fifodata[wridx].buffer), &ds, sizeof(DATASET));
+	if (++wridx == FIFO_BUFFER_LENGTH) wridx = 0;
     UNLOCK();
 
 	return 1;
 }
 
-int read_fifo(unsigned char *data, int maxlen)
+int read_fifo(DATASET *pds)
 {
     LOCK();
 	if (rdidx == wridx)
@@ -68,23 +61,12 @@ int read_fifo(unsigned char *data, int maxlen)
 		return 0;
     }
 
-    // read the length of the data
-    int len;
-    len = buffer[rdidx][0];
-    len <<= 8;
-    len += buffer[rdidx][1];
-    if(len > maxlen)
-    {
-        printf("readfifo: invalid length:%d allowed:%d\n",len,maxlen);
-        UNLOCK();
-        return 0;
-    }
-    
-	memcpy(data, buffer[rdidx]+2, len);
-	if (++rdidx == BUFFER_LENGTH) rdidx = 0;
+    // get data from fifo
+    int len = fifodata[rdidx].len;
+    memcpy(pds, &(fifodata[rdidx].buffer), sizeof(DATASET));
+	if (++rdidx == FIFO_BUFFER_LENGTH) rdidx = 0;
     
     UNLOCK();
-    
-	//printf("from fifo:%d:%s\n\n",len,data);
+
 	return len;
 }
