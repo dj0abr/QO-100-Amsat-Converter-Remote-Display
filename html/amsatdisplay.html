@@ -1,22 +1,55 @@
 <!doctype html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
 <title>AMSAT-DL Display</title>
 <link rel="icon" href="/favicon.ico?" type="image/x-icon">
-
+<script src="ol.js"></script>
+<!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+<script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+<link rel="stylesheet" href="ol.css" type="text/css">
 <style>
+
+.at
+{
+    font: normal 600 22px/1 "Verdana", sans-serif;
+}
 
 .downconv
 {
-    width: 300px;
-    height: 340px;
+    width: 606px;
+    height: 372px;
     background-color: #f0f0f0;
     border:1px solid #a0a0a0;
     border-radius: 5px;
     color: black;
 }
 
+.mapframe
+{
+    width: 606px;
+    height: 372px;
+    background-color: #f0f0f0;
+    border:1px solid #a0a0a0;
+    border-radius: 5px;
+    color: black;
+    margin-top: 5px;
+}
+
 .dntitle
+{
+    width: 280px;
+    background-color: #e0e0e0;
+    font: normal 300 18px/1 "Verdana", sans-serif;
+    border:1px solid #a0a0a0;
+    border-radius: 5px;
+    color: black;
+    padding:3px;
+    text-align: center;
+    margin: 5px;
+}
+
+.uptitle
 {
     width: 278px;
     background-color: #e0e0e0;
@@ -31,7 +64,7 @@
 
 .amsattitle
 {
-    width: 278px;
+    width: 588px;
     background-color: #e0e0e0;
     font: normal 300 18px/1 "Verdana", sans-serif;
     border:1px solid #a0a0a0;
@@ -62,6 +95,20 @@
 
 .dc_runtime
 {
+    width: 280px;
+    background-color: #e0e0e0;
+    font: normal 300 18px/1 "Verdana", sans-serif;
+    border:1px solid #a0a0a0;
+    border-radius: 5px;
+    color: black;
+    padding:3px;
+    text-align: center;
+    margin: 5px;
+    margin-top: 16px;
+}
+
+.up_runtime
+{
     width: 278px;
     background-color: #e0e0e0;
     font: normal 300 18px/1 "Verdana", sans-serif;
@@ -72,6 +119,30 @@
     text-align: center;
     margin: 5px;
     margin-top: 10px;
+}
+
+.upmain
+{
+    width: 284px;
+    height: 216px;
+    background-color: #f0f0f0;
+    font: normal 300 18px/1 "Verdana", sans-serif;
+    border:1px solid #a0a0a0;
+    border-radius: 5px;
+    margin: 5px;
+}
+
+.map
+{
+    width: 595px;
+    height: 325px;
+    background-color: #f0ffff;
+    margin: 5px;
+}
+
+.as_flex
+{
+    display: flex;
 }
 
 </style>
@@ -87,6 +158,7 @@ window.onload = start;
 function start()
 {
     create_display();
+    initMap();
     myOnloadFunction();
     setInterval(myOnloadFunction, 1000);
 }
@@ -107,50 +179,60 @@ function handleContent()
     {
         // get data string from PHP
         var text = xmlHttpObject.responseText;
-        
+
         // walk through the elements
         var idx = 0;
         for(i=0; i<20; i++)
         {
-            try
-            {
-                var len = text.substring(idx,idx+3);
-                var binlen = Number(len);
-                idx += 3;
-                var type = text[idx++];
-                var data = text.substring(idx,binlen+idx);
-                idx += binlen;
-                
-                //console.log(len + " " + type + " <" + data + ">");
-                
-                if(len === undefined || type === undefined || data === undefined)
-                    break;
-                
-                if(type == '5')
-                {
-                    // Downconverter displaydata
-                    for(var y=0; y<8; y++)
-                    {
-                        for(var x=0; x<16; x++)
-                        {
-                            document.getElementById("displaycol"+ y + x).innerHTML = data.substring(y*16+x,y*16+x+1);
-                        }
-                    }
-                }
-                
-                if(type == '6')
-                {
-                    // Downconverter runtime string
-                    document.getElementById("dc_runtime").innerHTML = "Runtime: " + data;
-                }
-            }
-            catch(err)
+            var len = text.substring(idx,idx+3);
+            var binlen = Number(len);
+            idx += 3;
+            var type = text[idx++];
+            var data = text.substring(idx,binlen+idx);
+            idx += binlen;
+            
+            //console.log("i:" + i + " " + len + " " + type + " <" + data + ">");
+            
+            if(len === undefined || type === undefined || data === undefined)
             {
                 break;
+            }
+            
+            if(type == '5')
+            {
+                // Downconverter displaydata
+                for(var y=0; y<8; y++)
+                {
+                    for(var x=0; x<16; x++)
+                    {
+                        document.getElementById("displaycol"+ y + x).innerHTML = data.substring(y*16+x,y*16+x+1);
+                    }
+                }
+            }
+            
+            if(type == '6')
+            {
+                // Downconverter runtime string
+                document.getElementById("dc_runtime").innerHTML = "Runtime: " + data;
+            }
+            
+            if(type == '7')
+            {
+                // QTH Locator
+                document.getElementById("at").innerHTML = "Location Map:  " + data;
+                if(data !== qthloc)
+                {
+                    qthlocToLonLat(data);   // fill lat and lon
+                    updateMap();
+                    qthloc = data;
+                }
+                
             }
         }
     }
 }
+
+var qthloc = " ";
 
 function createDiv(elemid, elemclass, parentelem, text)
 {
@@ -171,6 +253,8 @@ ID of a box: displaycolyx y=row(0..7) x=col(0..15)
 function create_display()
 {
     document.getElementById("dntitle").innerHTML = "Downconverter Remote Display";
+    document.getElementById("uptitle").innerHTML = "Upconverter Remote Display";
+    document.getElementById("at").innerHTML = "Location Map";
     // make the 8 row divs, horizontal stripes
     for(row=0; row<8; row++)
     {
@@ -189,15 +273,175 @@ function create_display()
     }
 }
 
+function Deg2Rad(degrees)
+{
+    return degrees * Math.PI / 180;
+}
+
+function Rad2Deg(radians)
+{
+    return radians * 180 / Math.PI;
+}
+
+// convert QTHloc to long/lat
+// some parts of this formular from: Iacopo Giangrandi, http://www.giangrandi.ch
+// but evaluation of 4char QTHloc corrected
+var str_chr_up = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+var str_num = "0123456789";
+var lat=0,lon=0;
+
+function qthlocToLonLat(qth)
+{
+    // check length
+    if (qth.length != 4 && qth.length != 6)
+        return 0;
+
+    qth = qth.toUpperCase();
+
+    // check format first 4 chars
+    if ((qth.charAt(0) < 'A') || (qth.charAt(0) > 'S') || (qth.charAt(1) < 'A') || (qth.charAt(1) > 'S') ||
+        (qth.charAt(2) < '0') || (qth.charAt(2) > '9') || (qth.charAt(3) < '0') || (qth.charAt(3) > '9'))
+    return 0;
+
+    // check format of 6 digit locator
+    if ((qth.length == 6) && ((qth.charAt(4) < 'A') || (qth.charAt(4) > 'X') ||
+        (qth.charAt(5) < 'A') || (qth.charAt(5) > 'X')))
+    return 0;
+
+    lat = str_chr_up.indexOf(qth.charAt(1)) * 10;               // 2nd digit: 10deg latitude slot.
+    lon = str_chr_up.indexOf(qth.charAt(0)) * 20;               // 1st digit: 20deg longitude slot.
+    lat += str_num.indexOf(qth.charAt(3)) * 1;                  // 4th digit: 1deg latitude slot.
+    lon += str_num.indexOf(qth.charAt(2)) * 2;                  // 3rd digit: 2deg longitude slot.
+    if (qth.length == 6)
+    {
+        lat += str_chr_up.indexOf(qth.charAt(5)) * 2.5 / 60;    // 6th digit: 2.5min latitude slot.
+        lon += str_chr_up.indexOf(qth.charAt(4)) * 5 / 60;      // 5th digit: 5min longitude slot.
+    }
+
+    if (qth.length == 4)                                        // Get coordinates of the center of the square.
+    {
+        lat += 0.5 * 1;
+        lon += 0.5 * 2;
+    }
+    else
+    {
+        lat += 0.5 * 2.5 / 60;
+        lon += 0.5 * 5 / 60;
+    }
+
+    lat -= 90;                                                  // Locator lat/lon origin shift.
+    lon -= 180;
+    
+    return 1;
+}
+
+function addMarker(callsign)
+{
+    var iconFeature = new ol.Feature
+    ({
+        geometry: new ol.geom.Point(ol.proj.transform([lon, lat], 'EPSG:4326', 'EPSG:3857')),
+    });
+
+    var iconStyle = new ol.style.Style
+    ({
+            image: new ol.style.Icon ({
+                    anchor: [0.5, 0.5],
+                    anchorXUnits: 'fraction',
+                    anchorYUnits: 'fraction',
+                    src: '/marker-icon.png',
+                    crossOrigin: 'anonymous',
+            }),
+            text: new ol.style.Text({
+                text: callsign,
+                font: 'normal 10px FontAwesome',
+                textAlign: 'center',
+                textBaseline: 'top',
+                fill: new ol.style.Fill({
+                    color: 'blue',
+                }),
+                /*stroke: new ol.style.Stroke({
+                    color: 'black',
+                    width: 1
+                })*/
+            })
+    });
+    iconFeature.setStyle(iconStyle);
+    vectorSource.addFeature(iconFeature);
+}
+
+var zoom = 5;
+var map = null;
+var vectorSource;
+
+function initMap()
+{
+    vectorSource = new ol.source.Vector({});
+    
+    // add markers
+    /*for (var i = 0; i < qtharr.length; i+=2) 
+    {
+        var qthloc = qtharr[i];
+        var callsign = qtharr[i+1];
+        if(qthlocToLonLat(qthloc) == 0) continue;
+        
+        addMarker(callsign);
+    }*/
+    // and add own location
+    addMarker("*");
+
+    map = new ol.Map({
+        target: 'mapdiv',
+        layers: [
+                    new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                    }),
+                    new ol.layer.Vector
+                    ({
+                        source: vectorSource,
+                        updateWhileAnimating: true,
+                        updateWhileInteracting: true,
+                    }),
+                ],
+        view:   new ol.View({
+                    center: ol.proj.fromLonLat([lon, lat]),
+                    zoom: zoom
+                })
+    });
+}
+
+function updateMap()
+{
+    vectorSource.clear();
+    document.getElementById('mapdiv').innerHTML = "";
+    initMap();
+}
+
 </script>
 <div class="downconv" id="downconv">
     <div class="amsattitle" id="amsattitle">
-    Station: DJ0ABR<br>
+    <a class="at">AMSAT Converter Remote Display</a>
+    <br>Station: DJ0ABR<br>
     QTH: Auerbach JN68NT
     </div>
-    <div class="dntitle" id="dntitle"></div>
-    <div class="amsatmain" id="amsatmain"></div>
-    <div class="dc_runtime" id="dc_runtime">Runtime</div>
+    <div class="as_flex">
+    <div>
+            <div class="dntitle" id="dntitle"></div>
+            <div class="amsatmain" id="amsatmain"></div>
+            <div class="dc_runtime" id="dc_runtime">Runtime</div>
+        </div>
+        <div>
+            <div class="uptitle" id="uptitle"></div>
+            <div class="upmain" id="upmain"></div>
+            <div class="up_runtime" id="up_runtime">Runtime</div>
+        </div>
+    </div>
+</div>
+
+<div class="mapframe">
+    <div class="amsattitle" id="maptitle">
+    <a id="at" class="at"></a>
+    </div>
+    <div id="mapdiv" class="map"></div>
 </div>
 </form>
 </body>

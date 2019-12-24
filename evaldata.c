@@ -13,11 +13,13 @@ void dc_getruntime();
 
 pthread_mutex_t crit_sec_dsp;
 pthread_mutex_t crit_sec_dntime;
+pthread_mutex_t crit_sec_qthloc;
 struct timeval tv_start;
 
 // access to these variables must be thread safe !
 DN_TIME dn_time;
 DISPLAY display;
+QTHLOC qthloc;
 
 void init_displayarray()
 {
@@ -42,6 +44,15 @@ void init_downtime()
     
     gettimeofday(&tv_start, NULL);
     dc_getruntime();
+    
+    // and init qthloc
+    LOCK(crit_sec_qthloc);
+    qthloc.length[0] = '0';
+    qthloc.length[1] = '0';
+    qthloc.length[2] = '6';
+    qthloc.type = '7';
+    memset(qthloc.data,'-',6);
+    UNLOCK(crit_sec_qthloc);
 }
 
 void eval_downconverter(char *s)
@@ -64,6 +75,17 @@ void eval_downconverter(char *s)
     memcpy(text,s+10,XSIZE);
     text[XSIZE] = 0;
     int len = strlen(text);
+    
+    //printf("%d %d %s\n",x,y,text);
+    
+    // extract QTH locator, line 1 col 9
+    char *p = &((display.data)[1][9]);
+    if(*p >= 'A' && *p<='Z')
+    {
+        LOCK(crit_sec_qthloc);
+        memcpy(qthloc.data,p,6);
+        UNLOCK(crit_sec_qthloc);
+    }
     
     // check if display must be cleared
     // clear full display
@@ -129,6 +151,7 @@ void dc_getruntime()
 // thread safty is not required
 DISPLAY display_php;
 DN_TIME dn_time_php;
+QTHLOC qthloc_php;
 
 DISPLAY get_Display()
 {
@@ -144,6 +167,14 @@ DN_TIME get_dn_time()
     memcpy(&dn_time_php,&dn_time,sizeof(DN_TIME));
     UNLOCK(crit_sec_dntime);
     return dn_time_php;
+}
+
+QTHLOC get_qthloc()
+{
+    LOCK(crit_sec_qthloc);
+    memcpy(&qthloc_php,&qthloc,sizeof(QTHLOC));
+    UNLOCK(crit_sec_qthloc);
+    return qthloc_php;
 }
 
 

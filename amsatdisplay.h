@@ -38,9 +38,15 @@ typedef struct {
 
 typedef struct {
     char length[3];             // length of data as ascii string (better for XML/http)
-    char type;                  // '5' = display contents follows
+    char type;                  // '6' = display contents follows
     char data[14];              // runtime as text
 } DN_TIME;
+
+typedef struct {
+    char length[3];             // length of data as ascii string (better for XML/http)
+    char type;                  // '7' = display contents follows
+    char data[6];               // runtime as text
+} QTHLOC;
 
 int serial_init();
 void eval_downconverter(char *s);
@@ -51,6 +57,7 @@ void show_display(char *d, char *tit);
 void init_displayarray();
 DISPLAY get_Display();
 DN_TIME get_dn_time();
+QTHLOC get_qthloc();
 void init_downtime();
 
 

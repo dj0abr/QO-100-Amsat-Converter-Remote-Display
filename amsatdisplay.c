@@ -217,6 +217,10 @@ uint8_t alldata[MAXDATALEN * FIFO_BUFFER_LENGTH];
             memcpy(&alldata[idx], &dnt, sizeof(DN_TIME));
             idx += sizeof(DN_TIME);
             
+            QTHLOC qth = get_qthloc();
+            memcpy(&alldata[idx], &qth, sizeof(QTHLOC));
+            idx += sizeof(QTHLOC);
+            
             DISPLAY ds = get_Display();
             memcpy(&alldata[idx], &ds, sizeof(DISPLAY));
             idx += sizeof(DISPLAY);
