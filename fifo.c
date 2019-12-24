@@ -3,17 +3,19 @@
  * ====================
  * by DJ0ABR 
  * 
- * fifo.c ... thread save fifo to send data from the serial thread to the main thread
- * 
- * the fifo can store BUFFER_LENGTH elements, each element is a text string with maxlength BUFFER_ELEMENT_SIZE
+ * fifo.c ... thread save data for the various formats
  * 
  * */
 
 #include "amsatdisplay.h"
 
+// used for locking and unlocking 
 pthread_mutex_t crit_sec;
-#define LOCK()	pthread_mutex_lock(&crit_sec)
-#define UNLOCK()	pthread_mutex_unlock(&crit_sec)
+#define LOCK()      pthread_mutex_lock(&crit_sec)
+#define UNLOCK()    pthread_mutex_unlock(&crit_sec)
+
+// data buffer for the downconverter display contents
+
 
 struct {
     int len;

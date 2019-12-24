@@ -200,6 +200,7 @@ uint8_t alldata[MAXDATALEN * FIFO_BUFFER_LENGTH];
     memset(s,' ',MAXDATALEN);
     memset(dispdata,' ',MAXDATALEN);
     init_displayarray();
+    init_downtime();
     init_udppipe();
     serial_init();
     
@@ -209,21 +210,19 @@ uint8_t alldata[MAXDATALEN * FIFO_BUFFER_LENGTH];
         int len = read_udppipe((unsigned char *)pip,MAXDATALEN);
         if(len > 0)
         {
-            // read all data from the fifo and put it in one binary string
-            DATASET ds;
             int idx = 0;
-            while((len = read_fifo(&ds)))
-            {
-                len += 4;  // include length and type from DATASET
-                memcpy(&alldata[idx], &ds, len);
-                idx += len;
-            }
             
-            if(idx != 0)
-            {
-                // send to PHP
-                write_udppipe(alldata,idx);
-            }
+            // read all data and put it in one binary string
+            DN_TIME dnt = get_dn_time();
+            memcpy(&alldata[idx], &dnt, sizeof(DN_TIME));
+            idx += sizeof(DN_TIME);
+            
+            DISPLAY ds = get_Display();
+            memcpy(&alldata[idx], &ds, sizeof(DISPLAY));
+            idx += sizeof(DISPLAY);
+            
+            // send to PHP
+            write_udppipe(alldata,idx);
         }
     }
         
