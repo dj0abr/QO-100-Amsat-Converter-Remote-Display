@@ -246,6 +246,8 @@ static int idx = 0;
 	{
 	case 0: if(rxdatabyte == 'O')
 				idx++;
+            if(rxdatabyte == 'U')
+				idx = 101;
 			break;
 	case 1: if(rxdatabyte == 'L')
 				idx++;
@@ -262,6 +264,7 @@ static int idx = 0;
 			{
 				// header found, read all data until '\n'
 				rxidx = 0;
+                memset(rxbuf,0,sizeof(rxbuf));
 				idx++;
 			}
 			else
@@ -300,7 +303,62 @@ static int idx = 0;
 				break;
 			}
 			break;
-	}
+
+    case 101: if(rxdatabyte == 'P')
+				idx++;
+			else
+				idx = 0;
+			break;
+	case 102: if(rxdatabyte == 'C')
+                idx++;
+            else
+                idx = 0;
+            break;
+	case 103:
+			if(rxdatabyte == ' ')
+			{
+				// header found, read all data until '\n'
+				rxidx = 0;
+                memset(rxbuf,0,sizeof(rxbuf));
+				idx++;
+			}
+			else
+				idx = 0;
+			break;
+
+	case 104:	// read all data until '\n'
+			if(rxidx >= DOWN_MAXRXLEN)
+			{
+				// too long, ignore
+				idx = 0;
+				break;
+			}
+
+			rxbuf[rxidx++] = rxdatabyte;
+
+			if(rxdatabyte == '\n')
+			{
+				// finished reading a complete sentence
+				rxbuf[rxidx] = 0;	      // add string terminator
+				strcpy(databuf,"UPC ");   // copy to databuf, add header which is not in rxbuf
+				memcpy(databuf+4,rxbuf,DOWN_MAXRXLEN-4);
+                databuf[DOWN_MAXRXLEN-1] = 0;   // terminate at the end, just to be sure
+                
+                // trim any non-text char at the end of the line
+                for(int i=0; i<strlen(databuf); i++)
+                {
+                    if(databuf[i] < ' ' || databuf[i] > 'z')
+                        databuf[i] = 0;
+                }
+                
+                // the complete sentence is in databuf
+                // build a simulated display
+                eval_upconverter(databuf);
+				idx = 0;
+				break;
+			}
+			break;
+    }
     
     return 0;
 }

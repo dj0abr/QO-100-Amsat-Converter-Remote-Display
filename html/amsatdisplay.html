@@ -145,6 +145,27 @@
     display: flex;
 }
 
+.uptable
+{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tab_td0
+{
+    width: 145px;
+    font: normal 100 14px/1 "Verdana", sans-serif;
+    border: 1px solid #dddddd;
+}
+
+.tab_td1
+{
+    width: 135px;
+    font: normal 100 14px/1 "Verdana", sans-serif;
+    border: 1px solid #dddddd;
+}
+
+
 </style>
 </head>
 
@@ -159,6 +180,7 @@ function start()
 {
     create_display();
     initMap();
+    createUpconvTable();
     myOnloadFunction();
     setInterval(myOnloadFunction, 1000);
 }
@@ -226,12 +248,91 @@ function handleContent()
                     updateMap();
                     qthloc = data;
                 }
-                
+            }
+            
+            if(type == '8')
+            {
+                // generate Upconverter String
+                var upstr = "";
+                for(var i=0; i<12; i++)
+                {
+                    if(i==3) continue; // Reverse power currently not supported
+                    switch (i)
+                    {
+                    case 0: upstr = "PA Temperature:    "; break;
+                    case 1: upstr = "PA Supply Voltage: "; break;
+                    case 2: upstr = "Forward Power: "; break;
+                    case 4: upstr = "LOCK Status: "; break;
+                    case 5: upstr = "Mixer OSC QRG: "; break;
+                    case 6: upstr = "PTT:"; break;
+                    case 7: upstr = "Power ON Message:"; break;
+                    case 8: upstr = "Resync:"; break;
+                    case 9: upstr = "Lockstatus:"; break;
+                    case 10:upstr = "Input QRG:"; break;
+                    case 11:upstr = "Temp. Alarm:"; break;
+                    default:upstr = " "; break;
+                    }
+                    
+                    document.getElementById("td" + i + " 0").innerHTML = upstr;
+                    
+                    var valstr = data.substring(i*30,(i+1)*30).substring(0,15);
+                    var si = valstr.indexOf(" ");
+                    var firstval = 0;
+                    try
+                    {
+                        firstval = Number(valstr.substring(0,si));
+                    }
+                    catch
+                    {
+                        firstval = 0;
+                    }
+                    
+                    switch (i)
+                    {
+                    case 0: valstr += " degC"; break;
+                    case 1: valstr = firstval / 1000;
+                            valstr += " V"; 
+                            break;
+                    case 2: if(txing)
+                            {
+                                var spcidx = valstr.indexOf(" ");
+                                valstr = valstr.substring(spcidx);
+                                var db = Number(valstr);
+                                if(db < 1) valstr = "<0";
+                                valstr += " dBm"; 
+                            }
+                            else
+                                valstr = "---";
+                            break;
+                    case 4: if(valstr.trim() == "1") valstr="LOCK"; else valstr="UNLOCKED"; break;
+                    case 5: valstr = firstval / 1000;
+                            valstr += " MHz"; 
+                            break;
+                    case 6: if(valstr.trim() == "1") 
+                            {
+                                valstr="TX"; 
+                                txing = 1;
+                            }
+                            else 
+                            {
+                                valstr="RX"; 
+                                txing = 0;
+                            }
+                            break;
+                    case 10: valstr = firstval / 1000;
+                            valstr += " MHz"; 
+                            break;
+                    case 11:if(valstr.trim() == "") valstr = "---"; break;
+                    }
+                    
+                    document.getElementById("td" + i + " 1").innerHTML = valstr;
+                }
             }
         }
     }
 }
 
+var txing = 0;
 var qthloc = " ";
 
 function createDiv(elemid, elemclass, parentelem, text)
@@ -360,10 +461,6 @@ function addMarker(callsign)
                 fill: new ol.style.Fill({
                     color: 'blue',
                 }),
-                /*stroke: new ol.style.Stroke({
-                    color: 'black',
-                    width: 1
-                })*/
             })
     });
     iconFeature.setStyle(iconStyle);
@@ -378,16 +475,6 @@ function initMap()
 {
     vectorSource = new ol.source.Vector({});
     
-    // add markers
-    /*for (var i = 0; i < qtharr.length; i+=2) 
-    {
-        var qthloc = qtharr[i];
-        var callsign = qtharr[i+1];
-        if(qthlocToLonLat(qthloc) == 0) continue;
-        
-        addMarker(callsign);
-    }*/
-    // and add own location
     addMarker("*");
 
     map = new ol.Map({
@@ -415,6 +502,31 @@ function updateMap()
     vectorSource.clear();
     document.getElementById('mapdiv').innerHTML = "";
     initMap();
+}
+
+function createUpconvTable()
+{
+    var div = document.createElement("table");
+    div.id = "uptable";
+    div.className = "uptable";
+    document.getElementById("upmain").appendChild(div);
+    
+    for(var tr=0; tr<12; tr++)
+    {
+        if(tr==3) continue; // Reverse power currently not supported
+        var div = document.createElement("tr");
+        div.id = "tr" + tr;
+        div.className = "tab_tr"+tr;
+        document.getElementById("uptable").appendChild(div);
+        
+        for(var td=0; td<2; td++)
+        {
+            var div = document.createElement("td");
+            div.id = "td" + tr + " " + td;
+            div.className = "tab_td"+td;
+            document.getElementById("tr" + tr).appendChild(div);
+        }
+    }
 }
 
 </script>

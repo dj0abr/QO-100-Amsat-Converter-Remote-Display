@@ -14,12 +14,14 @@ void dc_getruntime();
 pthread_mutex_t crit_sec_dsp;
 pthread_mutex_t crit_sec_dntime;
 pthread_mutex_t crit_sec_qthloc;
+pthread_mutex_t crit_sec_upconv;
 struct timeval tv_start;
 
 // access to these variables must be thread safe !
 DN_TIME dn_time;
 DISPLAY display;
 QTHLOC qthloc;
+UPCONV upconv;
 
 void init_displayarray()
 {
@@ -53,6 +55,18 @@ void init_downtime()
     qthloc.type = '7';
     memset(qthloc.data,'-',6);
     UNLOCK(crit_sec_qthloc);
+}
+
+void init_upconv()
+{
+    // init display array with spaces
+    LOCK(crit_sec_upconv);
+    upconv.length[0] = '4';
+    upconv.length[1] = '5';
+    upconv.length[2] = '0';
+    upconv.type = '8';
+    memset(upconv.data,' ',UPELEMENTS*MAXUPTEXTLEN);
+    UNLOCK(crit_sec_upconv);
 }
 
 void eval_downconverter(char *s)
@@ -147,11 +161,29 @@ void dc_getruntime()
     UNLOCK(crit_sec_dntime);
 }
 
+void eval_upconverter(char *s)
+{
+    // format: UPC_xx_yy_text
+    //         0123456789
+    s[6] = s[9] = 0;        // terminate x and y
+    
+    // int x = atoi(s+4);      // x is always 0 and of no interest
+    int y = atoi(s+7);      // get y, this is the id of the following text message
+    
+    char text[MAXUPTEXTLEN+1];     // get text and terminate it
+    memset(text,' ',MAXUPTEXTLEN);
+    memcpy(text,s+10,MAXUPTEXTLEN);
+    text[MAXUPTEXTLEN] = 0;
+    
+    memcpy(upconv.data[y],text,MAXUPTEXTLEN);
+}
+
 // these are the variables used to get the data and send it to PHP
 // thread safty is not required
 DISPLAY display_php;
 DN_TIME dn_time_php;
 QTHLOC qthloc_php;
+UPCONV upconv_php;
 
 DISPLAY get_Display()
 {
@@ -175,6 +207,14 @@ QTHLOC get_qthloc()
     memcpy(&qthloc_php,&qthloc,sizeof(QTHLOC));
     UNLOCK(crit_sec_qthloc);
     return qthloc_php;
+}
+
+UPCONV get_upconv()
+{
+    LOCK(crit_sec_upconv);
+    memcpy(&upconv_php,&upconv,sizeof(UPCONV));
+    UNLOCK(crit_sec_upconv);
+    return upconv_php;
 }
 
 

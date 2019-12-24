@@ -26,6 +26,8 @@
 #define DOWN_MAXRXLEN 500       // serial RX
 #define FIFO_BUFFER_LENGTH 100  // fifo length
 #define MAXDATALEN 512          // max length of one data string
+#define UPELEMENTS  15          // max number of elements of upconverter
+#define MAXUPTEXTLEN  30        // max element length of upconverter
 
 #define XSIZE   16
 #define YSIZE   8
@@ -45,8 +47,14 @@ typedef struct {
 typedef struct {
     char length[3];             // length of data as ascii string (better for XML/http)
     char type;                  // '7' = display contents follows
-    char data[6];               // runtime as text
+    char data[6];               // qth locator
 } QTHLOC;
+
+typedef struct {
+    char length[3];             // length of data as ascii string (better for XML/http)
+    char type;                  // '8' = display contents follows
+    char data[UPELEMENTS][MAXUPTEXTLEN];// all text data for max. 20 y IDs
+} UPCONV;
 
 int serial_init();
 void eval_downconverter(char *s);
@@ -58,8 +66,10 @@ void init_displayarray();
 DISPLAY get_Display();
 DN_TIME get_dn_time();
 QTHLOC get_qthloc();
+UPCONV get_upconv();
 void init_downtime();
-
+void eval_upconverter(char *s);
+void init_upconv();
 
 extern int dataready;
 extern char databuf[DOWN_MAXRXLEN+1];

@@ -200,6 +200,7 @@ uint8_t alldata[MAXDATALEN * FIFO_BUFFER_LENGTH];
     memset(s,' ',MAXDATALEN);
     memset(dispdata,' ',MAXDATALEN);
     init_displayarray();
+    init_upconv();
     init_downtime();
     init_udppipe();
     serial_init();
@@ -224,6 +225,16 @@ uint8_t alldata[MAXDATALEN * FIFO_BUFFER_LENGTH];
             DISPLAY ds = get_Display();
             memcpy(&alldata[idx], &ds, sizeof(DISPLAY));
             idx += sizeof(DISPLAY);
+            
+            UPCONV uc = get_upconv();
+            char *p = &(uc.data[0][0]);
+            // remove unprintable characters
+            for(int i=0; i<(UPELEMENTS*MAXUPTEXTLEN); i++)
+            {
+                if(p[i]<' ' || p[i]>'z') p[i]=' ';
+            }
+            memcpy(&alldata[idx], &uc, sizeof(UPCONV));
+            idx += sizeof(UPCONV);
             
             // send to PHP
             write_udppipe(alldata,idx);
