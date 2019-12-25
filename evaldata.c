@@ -11,10 +11,12 @@
 
 void dc_getruntime();
 
+
 pthread_mutex_t crit_sec_dsp;
 pthread_mutex_t crit_sec_dntime;
 pthread_mutex_t crit_sec_qthloc;
 pthread_mutex_t crit_sec_upconv;
+pthread_mutex_t crit_sec_pac;
 struct timeval tv_start;
 
 // access to these variables must be thread safe !
@@ -22,6 +24,10 @@ DN_TIME dn_time;
 DISPLAY display;
 QTHLOC qthloc;
 UPCONV upconv;
+PAC pac;
+
+int pac_avail = 0;
+int upc_avail = 0;
 
 void init_displayarray()
 {
@@ -33,6 +39,18 @@ void init_displayarray()
     display.type = '5';
     memset(display.data,' ',YSIZE*XSIZE);
     UNLOCK(crit_sec_dsp);
+}
+
+void init_pacarray()
+{
+    // and PA controller
+    LOCK(crit_sec_pac);
+    pac.length[0] = '5';
+    pac.length[1] = '1';
+    pac.length[2] = '2';
+    pac.type = '9';
+    memset(pac.data,' ',sizeof(pac.data));
+    UNLOCK(crit_sec_pac);
 }
 
 void init_downtime()
@@ -59,7 +77,6 @@ void init_downtime()
 
 void init_upconv()
 {
-    // init display array with spaces
     LOCK(crit_sec_upconv);
     upconv.length[0] = '4';
     upconv.length[1] = '5';
@@ -163,6 +180,8 @@ void dc_getruntime()
 
 void eval_upconverter(char *s)
 {
+    upc_avail = 1;
+    
     // format: UPC_xx_yy_text
     //         0123456789
     s[6] = s[9] = 0;        // terminate x and y
@@ -175,7 +194,53 @@ void eval_upconverter(char *s)
     memcpy(text,s+10,MAXUPTEXTLEN);
     text[MAXUPTEXTLEN] = 0;
     
+    LOCK(crit_sec_upconv);
     memcpy(upconv.data[y],text,MAXUPTEXTLEN);
+    UNLOCK(crit_sec_upconv);
+}
+
+void eval_pacontroller(char *s)
+{
+    pac_avail = 1;
+    
+    // format: PAC_xx_yy_zz_text
+    //         012345678901234567
+    s[6] = s[9] = s[12] = 0;        // terminate x and y
+    
+    int x = atoi(s+4);      // get x
+    if(x >= XSIZE_PAC) return;  // x position
+    
+    int y = atoi(s+7);      // get y
+    if(y >= YSIZE) return;  // invalid line
+
+    int z = atoi(s+10);     // get z (Reverse Mode)
+    if(z!=0 && z!=1) return;       // invalid line
+
+    char text[XSIZE_PAC+1];     // get text and terminate it
+    memset(text,' ',XSIZE_PAC);
+    memcpy(text,s+13,XSIZE_PAC);
+    
+    if(!memcmp(text,"AMSAT",5))
+    {
+        // clear screen
+        init_pacarray();
+    }
+    
+    if(z == 1)
+    {
+        memcpy(text,s+13,XSIZE_PAC);
+        text[0] = '#';
+    }
+    text[XSIZE_PAC] = 0;
+    int len = strlen(text);
+    
+    //printf("PA-Controller: x:%d y:%d z:%d <%s>\n",x,y,z,text);
+        
+    // fill into display array
+    LOCK(crit_sec_pac);
+    memcpy((pac.data)[y]+x,text,len);
+    UNLOCK(crit_sec_pac);
+    //show_pac_display(&(pac.data[0][0]));
 }
 
 // these are the variables used to get the data and send it to PHP
@@ -184,6 +249,7 @@ DISPLAY display_php;
 DN_TIME dn_time_php;
 QTHLOC qthloc_php;
 UPCONV upconv_php;
+PAC pac_php;
 
 DISPLAY get_Display()
 {
@@ -217,6 +283,14 @@ UPCONV get_upconv()
     return upconv_php;
 }
 
+PAC get_pac()
+{
+    LOCK(crit_sec_pac);
+    memcpy(&pac_php,&pac,sizeof(PAC));
+    UNLOCK(crit_sec_pac);
+    return pac_php;
+}
+
 
 /*
 void show_display(char *d, char *tit)
@@ -227,12 +301,32 @@ void show_display(char *d, char *tit)
         char t[XSIZE+1];
         memcpy(t,d+(y*XSIZE),XSIZE);
         t[XSIZE]=0;
-        for(int x=0; x<16; x++)
+        for(int x=0; x<XSIZE; x++)
         {
             printf("%c",d[(y*XSIZE)+x]);
         }
         printf("\n");
     }
     printf("================\n");
+}
+
+
+void show_pac_display(char *d)
+{
+    LOCK(crit_sec_pac);
+    printf("================\n");
+    for(int y=0; y<YSIZE; y++)
+    {
+        char t[XSIZE_PAC+1];
+        memcpy(t,d+(y*XSIZE_PAC),XSIZE_PAC);
+        t[XSIZE_PAC]=0;
+        for(int x=0; x<XSIZE_PAC; x++)
+        {
+            printf("%c",d[(y*XSIZE_PAC)+x]);
+        }
+        printf("\n");
+    }
+    printf("================\n");
+    UNLOCK(crit_sec_pac);
 }
 */

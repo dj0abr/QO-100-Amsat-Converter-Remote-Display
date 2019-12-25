@@ -10,9 +10,11 @@ runs on PCs or single board computers (i.e. raspberry, odroid and many others).
 * fill into a web site
 * deliver this website to any bowser using a local apache webserver installation
 
-currently supported boards: Amsat-DL Downconverter V3d
-
-under construction: support of the Amsat-DL Upconverter V2.4
+# supported boards
+Amsat-DL Downconverter V3d
+Amsat-DL Upconverter V2.4
+and the 
+(Amsat-DL DATV-PA-Controller, until now only one system exists at the Antarctis Station. I don't know if this will be a public board. If this board is used then the baudrate must be changed to 115200, see serial.c)
 
 # software installation
 
@@ -56,6 +58,17 @@ The serial output works with 3,3v level. You need a 3,3v serial/USB converter. Y
     3) start this software as described above
     4) switch ON your Amsat Downconverter
     5) start a browser, enter your computer's IP address and watch the remote display
+    
+## hardware installation with Up AND Downconverter simultaneously
+    
+    1) connect the 3,3v USB adapter into your linux computer
+    2) connect Ground and the serial output of the Amsat-Upconverter with Ground 
+          and the serial input (RxD) of your USB adapter.
+    3) connect the serial output of the Amsat-Downconverter with the serial input of the Amsat-Upconverter.
+          (Ground exists already via the power supply wire).
+    4) start this software as described above
+    5) switch ON your Amsat Downconverter
+    6) start a browser, enter your computer's IP address and watch the remote display
     
 Have a lot of fun !
 DJ0ABR

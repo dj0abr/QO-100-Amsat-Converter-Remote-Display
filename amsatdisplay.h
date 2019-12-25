@@ -29,8 +29,9 @@
 #define UPELEMENTS  15          // max number of elements of upconverter
 #define MAXUPTEXTLEN  30        // max element length of upconverter
 
-#define XSIZE   16
-#define YSIZE   8
+#define XSIZE       16
+#define XSIZE_PAC   32
+#define YSIZE       8
 
 typedef struct {
     char length[3];             // length of data as ascii string (better for XML/http)
@@ -56,6 +57,12 @@ typedef struct {
     char data[UPELEMENTS][MAXUPTEXTLEN];// all text data for max. 20 y IDs
 } UPCONV;
 
+typedef struct {
+    char length[3];             // length of data as ascii string (better for XML/http)
+    char type;                  // '8' = display contents follows
+    char data[YSIZE][XSIZE_PAC];// 32x8 display (256x64 pixel, each character is 8x8)
+} PAC;
+
 int serial_init();
 void eval_downconverter(char *s);
 void init_udppipe();
@@ -69,7 +76,12 @@ QTHLOC get_qthloc();
 UPCONV get_upconv();
 void init_downtime();
 void eval_upconverter(char *s);
+void eval_pacontroller(char *s);
 void init_upconv();
+PAC get_pac();
+void init_pacarray();
 
 extern int dataready;
 extern char databuf[DOWN_MAXRXLEN+1];
+extern int pac_avail;
+extern int upc_avail;

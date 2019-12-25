@@ -60,6 +60,7 @@
     padding:3px;
     text-align: center;
     margin: 5px;
+    display: none;
 }
 
 .amsattitle
@@ -130,6 +131,7 @@
     border:1px solid #a0a0a0;
     border-radius: 5px;
     margin: 5px;
+    display: none;
 }
 
 .map
@@ -165,6 +167,47 @@
     border: 1px solid #dddddd;
 }
 
+.pacframe
+{
+    width: 606px;
+    height: 220px;
+    background-color: #f0f0f0;
+    border:1px solid #a0a0a0;
+    border-radius: 5px;
+    color: black;
+    margin-top: 5px;
+    display: none;
+}
+
+.pactitle
+{
+    width: 588px;
+    background-color: #e0e0e0;
+    font: normal 300 18px/1 "Verdana", sans-serif;
+    border:1px solid #a0a0a0;
+    border-radius: 5px;
+    color: black;
+    padding:3px;
+    text-align: center;
+    margin: 5px;
+}
+
+.paccolclass
+{
+    width: 13px;
+    height: 16px;
+    background-color: #202040;
+    font: normal 600 16px/1 "Courier New", sans-serif;
+    color: white;
+    padding:3px;
+}
+
+.pacrow
+{
+    height: 17px;
+    display: flex;
+    margin: 5px;
+}
 
 </style>
 </head>
@@ -231,7 +274,65 @@ function handleContent()
                     }
                 }
             }
-            
+
+            if(type == '9')
+            {
+                // show PA Controller Display
+                // make it visible
+                document.getElementById("pacframe").style.display = "block";
+                // PA Controller displaydata
+                for(var y=0; y<8; y++)
+                {
+                    var rev = 0;
+                    var len = 0;
+                    for(var x=0; x<32; x++)
+                    {
+                        var char = data.substring(y*32+x,y*32+x+1);
+                        if(char == '#')
+                        {
+                            rev = 1;
+                            if(x==16 && y==7) 
+                            {
+                                char = 'E';
+                                len = 13;
+                            }
+                            if(x==0 && y==7) 
+                            {
+                                char = 'F';
+                                len = 14;
+                            }
+                            if(x==13 && y==3)
+                            {
+                                char = 'W';
+                                len = 5;
+                            }
+                            if(x==13 && y==4) 
+                            {
+                                char = 'P';
+                                len = 5;
+                            }
+                            if(x==13 && y==2) 
+                            {
+                                char = 'N';
+                                len = 5;
+                            }
+                        }
+                        if(len > 0) 
+                        {
+                            len--;
+                            document.getElementById("paccol"+ y + x).style.color = "#202040";
+                            document.getElementById("paccol"+ y + x).style.backgroundColor = "white";
+                        }
+                        else
+                        {
+                            document.getElementById("paccol"+ y + x).style.color = "white";
+                            document.getElementById("paccol"+ y + x).style.backgroundColor = "#202040";
+                        }
+                        document.getElementById("paccol"+ y + x).innerHTML = char;
+                    }
+                }
+            }
+
             if(type == '6')
             {
                 // Downconverter runtime string
@@ -252,6 +353,8 @@ function handleContent()
             
             if(type == '8')
             {
+                document.getElementById("uptitle").style.display = "block";
+                document.getElementById("upmain").style.display = "block";
                 // generate Upconverter String
                 var upstr = "";
                 for(var i=0; i<12; i++)
@@ -353,6 +456,7 @@ ID of a box: displaycolyx y=row(0..7) x=col(0..15)
 */
 function create_display()
 {
+    // create Upconverter Display
     document.getElementById("dntitle").innerHTML = "Downconverter Remote Display";
     document.getElementById("uptitle").innerHTML = "Upconverter Remote Display";
     document.getElementById("at").innerHTML = "Location Map";
@@ -364,12 +468,28 @@ function create_display()
     }
     
     // now create 16 divs (columns) for each row
-    var lidx = 74;
     for(row=0; row<8; row++)
     {
         for(col=0; col<16; col++)
         {
             createDiv("displaycol"+row+col, "displaycolclass", "displayrow"+row, "");
+        }
+    }
+
+    // create PA Controller Display
+    document.getElementById("pactitle").innerHTML = "PA Controller Remote Display";
+    // make the 8 row divs, horizontal stripes
+    for(row=0; row<8; row++)
+    {
+        createDiv("pacrow"+row, "pacrow", "pacmain", "");
+    }
+    
+    // now create 32 divs (columns) for each row
+    for(row=0; row<8; row++)
+    {
+        for(col=0; col<32; col++)
+        {
+            createDiv("paccol"+row+col, "paccolclass", "pacrow"+row, "");
         }
     }
 }
@@ -545,9 +665,13 @@ function createUpconvTable()
         <div>
             <div class="uptitle" id="uptitle"></div>
             <div class="upmain" id="upmain"></div>
-            <div class="up_runtime" id="up_runtime">Runtime</div>
         </div>
     </div>
+</div>
+
+<div class="pacframe" id="pacframe">
+    <div class="pactitle" id="pactitle"></div>
+    <div class="pacmain" id="pacmain"></div>
 </div>
 
 <div class="mapframe">

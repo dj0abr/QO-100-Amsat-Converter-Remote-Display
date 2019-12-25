@@ -23,7 +23,8 @@ pthread_t serial_tid;
 char serportarr[4][50];
 int serportnum = 0;
 
-#define SERSPEED_CIV B9600
+#define SERSPEED B9600
+//#define SERSPEED B115200
 
 int fd_ser = -1; // handle of the ser interface
 char serdevice[20] = {"/dev/ttyUSB0"};
@@ -73,12 +74,14 @@ int rxbyte = 0;
         else
         {
             // serial IF is open, receive one byte
-            // or returns -1 if nothing available
             rxbyte = read_port();
             if(rxbyte != -1)
             {
-                //printf("rx: %d\n",rxbyte);
                 process_byte(rxbyte);
+            }
+            else
+            {
+                usleep(5);
             }
         }
             
@@ -103,8 +106,6 @@ int rxbyte = 0;
                     // and the serial interface will be re-opened
                     break;
         }
- 
-        usleep(100);
     }
     
     printf("exit serial thread\n");
@@ -174,8 +175,8 @@ int activate_serial()
 		return -1;
 	}
 
-	cfsetospeed(&tty, SERSPEED_CIV);
-	cfsetispeed(&tty, SERSPEED_CIV);
+	cfsetospeed(&tty, SERSPEED);
+	cfsetispeed(&tty, SERSPEED);
 
 	tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;
 	tty.c_iflag &= ~ICRNL; // binary mode (no CRLF conversion)
@@ -189,12 +190,10 @@ int activate_serial()
 
 	tty.c_cflag |= (CLOCAL | CREAD);
 
-	tty.c_cflag &= ~(PARENB | PARODD);
-	tty.c_cflag |= CSTOPB;
+	tty.c_cflag &= ~(PARENB | PARODD | CSTOPB);
 	tty.c_cflag &= ~CRTSCTS;
     
-
-	if (tcsetattr(fd_ser, TCSANOW, &tty) != 0) {
+    if (tcsetattr(fd_ser, TCSANOW, &tty) != 0) {
 		printf("error %d from tcsetattr %s\n", errno, serdevice);
 		return -1;
 	}
@@ -240,7 +239,7 @@ int process_byte(int rxdatabyte)
 {
 static int idx = 0;
 
-    //printf("%c",rxdatabyte);
+    //printf("%d: %c\n",idx,rxdatabyte);
     
     switch (idx)
 	{
@@ -248,6 +247,8 @@ static int idx = 0;
 				idx++;
             if(rxdatabyte == 'U')
 				idx = 101;
+            if(rxdatabyte == 'P')
+				idx = 201;
 			break;
 	case 1: if(rxdatabyte == 'L')
 				idx++;
@@ -354,6 +355,63 @@ static int idx = 0;
                 // the complete sentence is in databuf
                 // build a simulated display
                 eval_upconverter(databuf);
+				idx = 0;
+				break;
+			}
+			break;
+
+    case 201: 
+            if(rxdatabyte == 'A')
+				idx++;
+			else
+				idx = 0;
+			break;
+            
+	case 202: if(rxdatabyte == 'C')
+                idx++;
+            else
+                idx = 0;
+            break;
+	case 203:
+			if(rxdatabyte == ' ')
+			{
+				// header found, read all data until '\n'
+				rxidx = 0;
+                memset(rxbuf,0,sizeof(rxbuf));
+				idx++;
+			}
+			else
+				idx = 0;
+			break;
+
+	case 204:	// read all data until '\n'
+			if(rxidx >= DOWN_MAXRXLEN)
+			{
+				// too long, ignore
+				idx = 0;
+				break;
+			}
+
+			rxbuf[rxidx++] = rxdatabyte;
+
+			if(rxdatabyte == '\n')
+			{
+				// finished reading a complete sentence
+				rxbuf[rxidx] = 0;	      // add string terminator
+				strcpy(databuf,"PAC ");   // copy to databuf, add header which is not in rxbuf
+				memcpy(databuf+4,rxbuf,DOWN_MAXRXLEN-4);
+                databuf[DOWN_MAXRXLEN-1] = 0;   // terminate at the end, just to be sure
+                
+                // trim any non-text char at the end of the line
+                for(int i=0; i<strlen(databuf); i++)
+                {
+                    if(databuf[i] < ' ' || databuf[i] > 'z')
+                        databuf[i] = 0;
+                }
+                
+                // the complete sentence is in databuf
+                // build a simulated display
+                eval_pacontroller(databuf);
 				idx = 0;
 				break;
 			}
