@@ -11,10 +11,10 @@ runs on PCs or single board computers (i.e. raspberry, odroid and many others).
 * deliver this website to any bowser using a local apache webserver installation
 
 # supported boards
-Amsat-DL Downconverter V3d
-Amsat-DL Upconverter V2.4
+* Amsat-DL Downconverter V3d
+* Amsat-DL Upconverter V2.4
 and the 
-(Amsat-DL DATV-PA-Controller, until now only one system exists at the Antarctis Station. I don't know if this will be a public board. If this board is used then the baudrate must be changed to 115200, see serial.c)
+* (Amsat-DL DATV-PA-Controller, until now only one system exists at the Antarctis Station. I don't know if this will be a public board. If this board is used then the baudrate must be changed to 115200, see serial.c)
 
 # software installation
 
