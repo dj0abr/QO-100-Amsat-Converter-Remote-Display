@@ -16,11 +16,9 @@ int read_port();
 int process_byte(int rxdatabyte);
 void closeSerial();
 int activate_serial();
-void scanSerialPorts();
 
 void *serproc(void *pdata);
 pthread_t serial_tid; 
-char serportarr[4][50];
 int serportnum = 0;
 
 #define SERSPEED B9600
@@ -28,7 +26,6 @@ int serportnum = 0;
 
 int fd_ser = -1; // handle of the ser interface
 char serdevice[20] = {"/dev/ttyUSB0"};
-int ttynum = 0;
 
 char rxbuf[DOWN_MAXRXLEN+1]; // one extra byte for string terminator
 char databuf[DOWN_MAXRXLEN+1]; // one extra byte for string terminator
@@ -39,11 +36,13 @@ int rxidx = 0;
 // returns 0=failed, 1=ok
 int serial_init()
 {
-    while(serportnum == 0)
+    char *p = get_serial_device_name();
+    if(p == NULL)
     {
-        scanSerialPorts();
-        sleep(1);
+        printf("no serial device found\n");
+        exit(0);
     }
+    strcpy(serdevice,p);
     
     // automatically choose an USB port
     // start a new process
@@ -90,14 +89,7 @@ int rxbyte = 0;
             case 0: // ser IF is closed, open it
                     sleep(1);
                     if(activate_serial() == 0)
-                    {
                         status = 1;
-                    }
-                    else
-                    {
-                        // if open tty failed, then try the next ttyUSBx number
-                        if(++ttynum >= serportnum) ttynum = 0;
-                    }
                     break;
                     
             case 1: // normal processing
@@ -123,46 +115,14 @@ void closeSerial()
 	}
 }
 
-void scanSerialPorts()
-{
-    // look for available serial interfaces
-    // print all avaiable and use a pipe to read back the outputs
-    printf("scan for serial ports\n");
-    char s[250];
-    sprintf(s,"ls -1 /dev/ttyU*");
-    serportnum = 0;
-    FILE *fp = popen(s,"r");
-    if(fp)
-    {
-        while (fgets(s, sizeof(s)-1, fp) != NULL) 
-        {
-            // delete \n
-            if(strlen(s) > 5 && s[strlen(s)-1] == '\n')
-                s[strlen(s)-1] = 0;
-            strcpy(serportarr[serportnum++],s);
-            if(serportnum >=4) break;
-        }
-        pclose(fp);
-    }
-    else
-        printf("ERROR: cannot execute ls command\n");
-
-    printf("%d ports found:\n",serportnum);
-    for(int i=0; i<serportnum; i++)
-        printf("%s\n", serportarr[i]);
-}
-
 // Öffne die serielle Schnittstelle
 int activate_serial()
 {
 	struct termios tty;
-    char serdevice[30];
-    
-    sprintf(serdevice,"%s",serportarr[ttynum]);
     
 	closeSerial();
     
-    //printf("Open: %s\n",serdevice);
+    printf("Open: %s\n",serdevice);
     
 	fd_ser = open(serdevice, O_RDWR | O_NDELAY);
 	if (fd_ser < 0) {

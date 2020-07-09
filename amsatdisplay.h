@@ -19,6 +19,7 @@
 #include <arpa/inet.h>
 #include <math.h>
 #include <signal.h>
+#include "identifySerUSB.h"
 
 #define LOCK(crit_sec)      pthread_mutex_lock(&crit_sec)
 #define UNLOCK(crit_sec)    pthread_mutex_unlock(&crit_sec)

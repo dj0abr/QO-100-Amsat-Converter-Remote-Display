@@ -22,15 +22,27 @@ and the
     If php is not found then try php7 or similar.
     2) download (clone) all file to a new directory
     3) personalize the display, see "personalization"
-    4) to compile the software enter:  
+    4) identify the serial-USB adapter, see "serialUSB"
+    5) to compile the software enter:  
         make
-    5) to install this software enter:
+    6) to install this software enter:
         sudo make install
        this copies the web site files into the webserver directory
 
 # personalization
 open the file amsatdisplay.html (in the html folder) with a text editor. Go to the end of the file and look for my callsign: DJ0ABR. 
 Replace it with your own callsign and location.
+
+# serialUSB
+NEW: serial-USB devices my change their ttyUSB number randomly. For an exact identification do the following:
+    1) connect your USBserial adapter
+    2) enter this command in a terminal:
+       ls  /dev/ttyUSB*
+       this shows the device number i.e.: /dev/ttyUSB0
+    3) enter this command in a terminal, replace ttyUSB0 with the correct number
+       udevadm info -a -p  $(udevadm info -q path -n /dev/ttyUSB0) | grep '{serial}' | cut -d \" -f2 | head -n 1
+       this prints the ID of the serial USB adapter
+    4) enter this ID into the file identifySerUSB.c in the line #define SERID "xxxxxx", where xxxxxx is the ID
 
 # run this software
 start the program by entering:  ./ad
