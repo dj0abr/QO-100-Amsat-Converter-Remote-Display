@@ -35,12 +35,6 @@ Replace it with your own callsign and location.
 
 # serialUSB
 NEW: serial-USB devices my change their ttyUSB number randomly. For an exact identification do the following:
-
-    1) install apache and php. You can use the script "prepare_apache" to do this. 
-    If php is not found then try php7 or similar.
-    2) download (clone) all file to a new directory
-    3) personalize the display, see "personalization"
-    4) identify the serial-USB adapter, see "serialUSB"
     
     1) connect your USBserial adapter
     2) enter this command in a terminal:
