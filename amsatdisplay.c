@@ -7,6 +7,7 @@
  * */
 
 #include "amsatdisplay.h"
+#include <stdio.h>
 
 // cleans white spaces from beginning, middle and end of a string
 char *cleanString(char *str, int cleanspace)
@@ -167,7 +168,7 @@ void sighandler(int signum)
     exit(0);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
 char s[MAXDATALEN];
 char dispdata[MAXDATALEN];
@@ -179,6 +180,11 @@ uint8_t alldata[MAXDATALEN * FIFO_BUFFER_LENGTH];
     
     // look for the apache HTML path
     searchHTMLpath();
+
+    // Look for command line arguments
+    if( argc == 2 ) {
+        printf("Serial port supplied. Using %s\n", argv[1]);
+    }
     
     // Install or Update the html files
     installHTMLfiles();
@@ -204,7 +210,7 @@ uint8_t alldata[MAXDATALEN * FIFO_BUFFER_LENGTH];
     init_upconv();
     init_downtime();
     init_udppipe();
-    serial_init();
+    serial_init(argv[1]);
     
     while(1)
     {

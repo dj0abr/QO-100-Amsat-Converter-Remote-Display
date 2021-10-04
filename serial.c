@@ -34,15 +34,19 @@ int rxidx = 0;
 // creates a thread to run all serial specific jobs
 // call this once after program start
 // returns 0=failed, 1=ok
-int serial_init()
+int serial_init(char *d)
 {
-    char *p = get_serial_device_name();
-    if(p == NULL)
-    {
-        printf("no serial device found\n");
-        exit(0);
+    if (d != NULL) {
+        strcpy(serdevice,d);
+    } else {
+        char *p = get_serial_device_name();
+        if(p == NULL)
+        {
+            printf("no serial device found\n");
+            exit(0);
+        }
+        strcpy(serdevice,p);
     }
-    strcpy(serdevice,p);
     
     // automatically choose an USB port
     // start a new process
