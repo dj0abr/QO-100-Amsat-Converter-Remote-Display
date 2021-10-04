@@ -64,7 +64,7 @@ typedef struct {
     char data[YSIZE][XSIZE_PAC];// 32x8 display (256x64 pixel, each character is 8x8)
 } PAC;
 
-int serial_init();
+int serial_init(char *d);
 void eval_downconverter(char *s);
 void init_udppipe();
 char write_udppipe(unsigned char *data, int len);
